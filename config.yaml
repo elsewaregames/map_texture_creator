@@ -1,0 +1,26 @@
+# ===============================
+# Map Texture Creator Config
+# ===============================
+
+paths:
+  input_dir: "in"
+  output_dir: "out"
+
+processing:
+  kmeans_clusters: 4
+  alpha_threshold: 200
+
+flatten_colors:
+  enabled: true
+  target_luminance: 160   # 140 = dark, 160 = GTA-SA, 180 = Vice City
+
+files:
+  extensions:
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+    - ".tga"
+
+logging:
+  show_progress: true
+  show_stats: true
