@@ -63,3 +63,4 @@ Desktop.ini
 # CI / Build Artifacts
 # =========================================
 .cache/
+releases/
