@@ -3,8 +3,11 @@ import numpy as np
 import os
 import time
 import yaml
-from sklearn.cluster import KMeans
 import sys
+
+__app_name__ = "Map Texture Creator"
+__version__ = "1.0.0"
+
 
 def get_base_path():
     if getattr(sys, 'frozen', False):
@@ -17,7 +20,6 @@ BASE_PATH = get_base_path()
 # Load Config
 # -------------------------------
 CONFIG_FILE = os.path.join(BASE_PATH, "config.yaml")
-
 
 with open(CONFIG_FILE, "r") as f:
     config = yaml.safe_load(f)
@@ -36,6 +38,42 @@ VALID_EXTENSIONS = tuple(config["files"]["extensions"])
 SHOW_PROGRESS = config["logging"]["show_progress"]
 SHOW_STATS = config["logging"]["show_stats"]
 
+def kmeans_numpy(pixels, k, max_iters=20):
+    """
+    Simple NumPy-based KMeans.
+    pixels: (N, 3)
+    returns: labels (N,)
+    """
+    # Randomly choose initial centers
+    rng = np.random.default_rng(0)
+    centers = pixels[rng.choice(len(pixels), k, replace=False)]
+
+    for _ in range(max_iters):
+        # Compute distances to centers
+        distances = np.linalg.norm(
+            pixels[:, None, :] - centers[None, :, :],
+            axis=2
+        )
+
+        # Assign clusters
+        labels = np.argmin(distances, axis=1)
+
+        # Recompute centers
+        new_centers = np.array([
+            pixels[labels == i].mean(axis=0)
+            if np.any(labels == i) else centers[i]
+            for i in range(k)
+        ])
+
+        # Convergence check
+        if np.allclose(centers, new_centers):
+            break
+
+        centers = new_centers
+
+    return labels
+
+
 
 # -------------------------------
 # Core Logic
@@ -44,12 +82,8 @@ def remove_background_pixel_perfect(img):
     h, w, _ = img.shape
     pixels = img.reshape((-1, 3)).astype(np.float32)
 
-    kmeans = KMeans(
-        n_clusters=KMEANS_CLUSTERS,
-        n_init=10,
-        random_state=0
-    )
-    labels = kmeans.fit_predict(pixels)
+    labels = kmeans_numpy(pixels, KMEANS_CLUSTERS)
+
     label_map = labels.reshape((h, w))
 
     border_labels = np.concatenate([
@@ -125,6 +159,9 @@ def extract_map(image_path, output_path):
 # Main
 # -------------------------------
 def main():
+    print(f"{__app_name__} v{__version__}")
+    print("------------------------------------")
+
     start_time = time.time()
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -172,4 +209,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        input("\n[ERROR] Press ENTER to exit...")
+
