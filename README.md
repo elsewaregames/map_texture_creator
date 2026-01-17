@@ -26,7 +26,7 @@ MapTextureCreator/
 ├── out/                       # Generated minimap textures
 │
 ├── build.sh                   # Linux / Git Bash build script
-├── build.bat                  # Windows CMD build script
+├── release.sh                 # Release packaging script
 │
 └── bin/                       # Compiled executable output
 ```
@@ -144,6 +144,13 @@ To run the tool:
 Releases are used to distribute **stable, ready-to-use builds** of Map Texture Creator for end users.
 
 Each release represents a **versioned snapshot** of the tool and includes a downloadable package containing the executable and default configuration.
+
+Create a git tag first before initiating the release
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
 
 ---
 
